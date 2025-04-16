@@ -11,13 +11,13 @@ static const char *const EZO_COMMAND_TYPE_STRINGS[] = {
     "EZO_STATUS", "EZO_OFFSET"};
 
 void EZOPRSSensor::setup() {
-  // Inicialización
-  ESP_LOGD(TAG, "Inicializando sensor EZO-PRS");
+  // Initialization
+  ESP_LOGD(TAG, "Initializing EZO-PRS sensor");
   
-  // Configurar unidad cmH2O al iniciar
+  // Configure cmH2O unit at startup
   this->set_pressure_unit("cmh2o");
   
-  // Obtener información del dispositivo
+  // Get device information
   this->get_device_information();
 }
 
@@ -141,35 +141,35 @@ void EZOPRSSensor::loop() {
         case EzoCommandType::EZO_DEVICE_INFORMATION:
           if (start_location != std::string::npos) {
             this->device_information_callback_.call(payload.substr(start_location + 1));
-            // También actualizar el sensor de texto si está disponible
+            // Also update text sensor if available
             if (this->info_text_sensor_ != nullptr) {
               this->info_text_sensor_->publish_state(payload);
             }
           }
           break;
         case EzoCommandType::EZO_STATUS:
-          ESP_LOGI(TAG, "Estado del sensor: %s", payload.c_str());
+          ESP_LOGI(TAG, "Sensor status: %s", payload.c_str());
           if (this->status_text_sensor_ != nullptr) {
             this->status_text_sensor_->publish_state(payload);
           }
           break;
         case EzoCommandType::EZO_OFFSET:
-          ESP_LOGI(TAG, "Información de offset: %s", payload.c_str());
+          ESP_LOGI(TAG, "Offset information: %s", payload.c_str());
           if (this->info_text_sensor_ != nullptr) {
             this->info_text_sensor_->publish_state("Offset: " + payload);
           }
           break;
         case EzoCommandType::EZO_ALARM:
-          ESP_LOGI(TAG, "Estado de alarma: %s", payload.c_str());
+          ESP_LOGI(TAG, "Alarm status: %s", payload.c_str());
           if (this->info_text_sensor_ != nullptr) {
             this->info_text_sensor_->publish_state("Alarm: " + payload);
           }
           break;
         case EzoCommandType::EZO_CUSTOM:
           this->custom_callback_.call(payload);
-          // Para visualizar respuestas del sensor en el log
-          ESP_LOGI(TAG, "Respuesta a comando personalizado: %s", payload.c_str());
-          // Actualizar el sensor de texto si está disponible
+          // Display sensor responses in log
+          ESP_LOGI(TAG, "Response to custom command: %s", payload.c_str());
+          // Update text sensor if available
           if (this->info_text_sensor_ != nullptr) {
             this->info_text_sensor_->publish_state(payload);
           }

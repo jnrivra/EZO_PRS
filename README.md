@@ -132,6 +132,10 @@ Connect the EZO PRS sensor to your ESP32 using I2C:
 | SDA     | SDA (GPIO21) |
 | SCL     | SCL (GPIO22) |
 
+## Real-world Example
+
+For a more comprehensive example including additional features like sensor calibration, status monitoring, and unit switching, see the `example.yaml` file in this repository.
+
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.

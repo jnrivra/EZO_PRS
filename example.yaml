@@ -28,73 +28,189 @@ web_server:
 logger:
   level: INFO
 
-# Enable I2C
+# I2C configuration for sensors
 i2c:
-  sda: GPIO21
-  scl: GPIO22
-  scan: true
-  id: bus_a
+  - id: bus_a
+    sda: 15
+    scl: 16
+    scan: true
+  - id: bus_b
+    sda: 21
+    scl: 14
+    scan: true
 
-# External component configuration
-external_components:
-  - source: github://jnrivra/EZO_PRS@main
-    components: [ ezo_prs ]
+# =================== SENSORS ===================
 
-# EZO PRS sensor configuration
 sensor:
+  # === PRESSURE SENSOR ===
   - platform: ezo_prs
-    name: "Water Pressure"
+    i2c_id: bus_a
     id: pressure_sensor
-    address: 0x6A  # Default address
+    name: "Pressure Sensor"
     update_interval: 5s
-    pressure_unit: cmh2o  # Options: psi, atm, bar, kpa, inh2o, cmh2o
-    decimals: 3  # Number of decimal places (0-3)
-    info_text_sensor: pressure_info
-    status_text_sensor: pressure_status
+    pressure_unit: cmh2o
+    decimals: 3
+    info_text_sensor: sensor_info
+    status_text_sensor: sensor_status
+    filters:
+      - offset: 5.0  # Add 5 cm to pressure reading
 
-# Text sensors for additional information
+  # === TEMPERATURE SENSOR ===
+  - platform: sht4x
+    i2c_id: bus_a
+    temperature:
+      name: "Temperature"
+    humidity:
+      name: "Humidity"
+
+  # === SYSTEM SENSORS ===
+  - platform: wifi_signal  # WiFi signal strength in dB
+    id: wifi_signal_db
+    update_interval: 300s
+    entity_category: "diagnostic"
+    
+  - platform: copy  # WiFi signal strength in %
+    source_id: wifi_signal_db
+    name: "Signal %"
+    filters:
+      - lambda: return min(max(2 * (x + 100.0), 0.0), 100.0);
+    unit_of_measurement: "%"
+    entity_category: "diagnostic"
+    
+  - platform: uptime
+    name: "UpTime"
+
+# =================== ACTUATORS ===================
+
+switch:
+  # === WATER PUMP ===
+  - platform: gpio
+    name: "Water Pump"
+    pin: 38
+    inverted: true
+    restore_mode: ALWAYS_ON  # Always restore on at startup
+    
+  - platform: gpio
+    name: "Enable Peristaltic Pump 1"
+    pin: 11
+    inverted: true
+    restore_mode: ALWAYS_ON
+    
+  - platform: gpio
+    pin: 10
+    name: "Enable Peristaltic Pump 2"
+    restore_mode: ALWAYS_ON
+
+# =================== TEXT SENSORS ===================
+
 text_sensor:
+  # === SENSOR INFORMATION ===
   - platform: template
-    name: "Pressure Sensor Info"
-    id: pressure_info
+    name: "[PRS] Sensor Information"
+    id: sensor_info
     
   - platform: template
-    name: "Pressure Sensor Status"
-    id: pressure_status
+    name: "[PRS] Sensor Status"
+    id: sensor_status
 
-# Buttons for sensor control
+  - platform: template
+    name: "[PRS] Calibration Status"
+    id: prs_calibration_status
+
+# =================== CONTROL BUTTONS ===================
+
 button:
+  # === PRESSURE SENSOR BUTTONS ===
   - platform: template
-    name: "Calibrate Zero"
+    name: "[PRS] Check Calibration"
     on_press:
       then:
-        - lambda: |-
-            id(pressure_sensor).calibrate_zero();
-            
+        - lambda: 'id(pressure_sensor).send_custom("Cal,?");'
+        - logger.log: "Checking PRS calibration status"
+
   - platform: template
-    name: "Clear Calibration"
+    name: "[PRS] Calibrate Zero Point"
     on_press:
       then:
-        - lambda: |-
-            id(pressure_sensor).clear_calibration();
-            
+        - lambda: 'id(pressure_sensor).calibrate_zero();'
+        - logger.log: "Calibrating zero point"
+  
   - platform: template
-    name: "Check Calibration"
+    name: "[PRS] Calibrate High Point (30cm)"
     on_press:
       then:
-        - lambda: |-
-            id(pressure_sensor).check_calibration();
-            
+        - lambda: 'id(pressure_sensor).send_custom("Cal,30");'
+        - logger.log: "Calibrating high point (30 cm)"
+
   - platform: template
-    name: "Get Status"
+    name: "[PRS] Reset Calibration"
     on_press:
       then:
-        - lambda: |-
-            id(pressure_sensor).get_status();
-            
+        - lambda: 'id(pressure_sensor).clear_calibration();'
+        - logger.log: "Restoring factory calibration"
+  
   - platform: template
-    name: "Clear Offset"
+    name: "[PRS] Request Info"
     on_press:
       then:
-        - lambda: |-
-            id(pressure_sensor).clear_offset(); 
+        - lambda: 'id(pressure_sensor).send_custom("i");'
+  
+  - platform: template
+    name: "[PRS] Sensor Status"
+    on_press:
+      then:
+        - lambda: 'id(pressure_sensor).get_status();'
+        - logger.log: "Checking sensor status"
+
+  - platform: template
+    name: "[PRS] Reset Offset"
+    on_press:
+      then:
+        - lambda: 'id(pressure_sensor).clear_offset();'
+        - logger.log: "Resetting sensor offset"
+        
+  - platform: template
+    name: "[PRS] Check Offset"
+    on_press:
+      then:
+        - lambda: 'id(pressure_sensor).get_offset();'
+        - logger.log: "Checking configured offset"
+
+  - platform: template
+    name: "[PRS] Change to cmH2O"
+    on_press:
+      then:
+        - lambda: 'id(pressure_sensor).set_pressure_unit("cmh2o");'
+        - logger.log: "Changing unit to cmH2O"
+
+  - platform: template
+    name: "[PRS] Check Unit"
+    on_press:
+      then:
+        - lambda: 'id(pressure_sensor).send_custom("U,?");'
+        - logger.log: "Checking configured unit"
+
+############################
+#     ADDRESSABLE LED      #
+############################
+light:
+  - platform: esp32_rmt_led_strip
+    id: my_light  
+    rgb_order: GRB
+    pin: GPIO48
+    num_leds: 2
+    rmt_channel: 0
+    chipset: ws2812
+    name: "RGB Light"
+    effects:
+      - pulse:
+          transition_length: 550ms
+          update_interval: 550ms
+      - addressable_rainbow:
+          name: Rainbow Effect With Custom Values
+          speed: 10
+          width: 50
+      - addressable_random_twinkle:
+          name: Random Twinkle Effect With Custom Values
+          twinkle_probability: 5%
+          progress_interval: 32ms

@@ -37,7 +37,7 @@ PRESSURE_UNITS = {
 CONFIG_SCHEMA = (
     sensor.sensor_schema(
         EZOPRSSensor,
-        unit_of_measurement="cmH₂O",  # Cambiado de psi a cmH₂O
+        unit_of_measurement="cmH₂O",  # Changed from psi to cmH₂O
         accuracy_decimals=3,
         device_class=DEVICE_CLASS_PRESSURE,
         state_class=STATE_CLASS_MEASUREMENT,
