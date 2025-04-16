@@ -1,0 +1,8 @@
+/config/
+└──esphome/
+    └── components/
+        └── ezo_prs/
+            ├── __init__.py
+            ├── sensor.py
+            ├── ezo_prs.h
+            └── ezo_prs.cpp

@@ -1,0 +1,21 @@
+{
+  "name": "ezo_prs",
+  "version": "1.0.0",
+  "description": "Atlas Scientific EZO PRS Pressure sensor component for ESPHome",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/jnrivra/EZO_PRS.git"
+  },
+  "author": {
+    "name": "Juan Rivera",
+    "url": "https://github.com/jnrivra"
+  },
+  "license": "MIT",
+  "dependencies": {},
+  "homepage": "https://github.com/jnrivra/EZO_PRS",
+  "files": [
+    "components/ezo_prs/*.cpp",
+    "components/ezo_prs/*.h",
+    "components/ezo_prs/*.py"
+  ]
+} 
