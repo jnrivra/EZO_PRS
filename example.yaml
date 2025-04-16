@@ -20,23 +20,12 @@ api:
 ota:
   password: !secret ota_password
 
-# Enable Web Server
-web_server:
-  port: 80
-
-# Enable logging
-logger:
-  level: INFO
 
 # I2C configuration for sensors
 i2c:
   - id: bus_a
     sda: 15
     scl: 16
-    scan: true
-  - id: bus_b
-    sda: 21
-    scl: 14
     scan: true
 
 # =================== SENSORS ===================
@@ -52,54 +41,8 @@ sensor:
     decimals: 3
     info_text_sensor: sensor_info
     status_text_sensor: sensor_status
-    filters:
-      - offset: 5.0  # Add 5 cm to pressure reading
 
-  # === TEMPERATURE SENSOR ===
-  - platform: sht4x
-    i2c_id: bus_a
-    temperature:
-      name: "Temperature"
-    humidity:
-      name: "Humidity"
-
-  # === SYSTEM SENSORS ===
-  - platform: wifi_signal  # WiFi signal strength in dB
-    id: wifi_signal_db
-    update_interval: 300s
-    entity_category: "diagnostic"
-    
-  - platform: copy  # WiFi signal strength in %
-    source_id: wifi_signal_db
-    name: "Signal %"
-    filters:
-      - lambda: return min(max(2 * (x + 100.0), 0.0), 100.0);
-    unit_of_measurement: "%"
-    entity_category: "diagnostic"
-    
-  - platform: uptime
-    name: "UpTime"
-
-# =================== ACTUATORS ===================
-
-switch:
-  # === WATER PUMP ===
-  - platform: gpio
-    name: "Water Pump"
-    pin: 38
-    inverted: true
-    restore_mode: ALWAYS_ON  # Always restore on at startup
-    
-  - platform: gpio
-    name: "Enable Peristaltic Pump 1"
-    pin: 11
-    inverted: true
-    restore_mode: ALWAYS_ON
-    
-  - platform: gpio
-    pin: 10
-    name: "Enable Peristaltic Pump 2"
-    restore_mode: ALWAYS_ON
+ 
 
 # =================== TEXT SENSORS ===================
 
@@ -190,27 +133,3 @@ button:
         - lambda: 'id(pressure_sensor).send_custom("U,?");'
         - logger.log: "Checking configured unit"
 
-############################
-#     ADDRESSABLE LED      #
-############################
-light:
-  - platform: esp32_rmt_led_strip
-    id: my_light  
-    rgb_order: GRB
-    pin: GPIO48
-    num_leds: 2
-    rmt_channel: 0
-    chipset: ws2812
-    name: "RGB Light"
-    effects:
-      - pulse:
-          transition_length: 550ms
-          update_interval: 550ms
-      - addressable_rainbow:
-          name: Rainbow Effect With Custom Values
-          speed: 10
-          width: 50
-      - addressable_random_twinkle:
-          name: Random Twinkle Effect With Custom Values
-          twinkle_probability: 5%
-          progress_interval: 32ms
