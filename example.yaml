@@ -1,4 +1,8 @@
-# Example ESPHome configuration for EZO PRS pressure sensor
+# Example ESPHome configuration for the Atlas Scientific EZO-PRS pressure sensor.
+#
+# Before compiling, create your secrets file:
+#   cp secrets.yaml.example secrets.yaml   # then fill in your own values
+# secrets.yaml is gitignored and must never be committed.
 
 # Basic ESP32 setup
 esphome:

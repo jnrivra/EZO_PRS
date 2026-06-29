@@ -19,7 +19,16 @@ jobs:
           
       - name: Install ESPHome
         run: pip install esphome
-        
+
+      - name: Create placeholder secrets for validation
+        run: |
+          cat > secrets.yaml <<'EOF'
+          wifi_ssid: "ci-ssid"
+          wifi_password: "ci-password"
+          api_encryption_key: "bo3DSjQDR9JsiLfFLmcd0wjC0OBYY/M5pXBIvyxjp50="
+          ota_password: "ci-ota-password"
+          EOF
+
       - name: Validate example configuration
         run: esphome config example.yaml
         
