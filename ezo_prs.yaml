@@ -1,8 +1,26 @@
-/config/
-└──esphome/
-    └── components/
-        └── ezo_prs/
-            ├── __init__.py
-            ├── sensor.py
-            ├── ezo_prs.h
-            └── ezo_prs.cpp
+# =============================================================================
+# EZO-PRS — Reusable ESPHome package
+# =============================================================================
+# Drop-in snippet that pulls in the `ezo_prs` external component and defines a
+# ready-to-use pressure sensor. Include it from your device config with:
+#
+#   packages:
+#     ezo_prs: github://jnrivra/EZO_PRS/ezo_prs.yaml@main
+#
+# Your main config must define an I2C bus with `id: bus_a` (see example.yaml).
+# To customize name, unit, decimals or update interval, copy the `sensor` block
+# below into your own config instead of using this package.
+# =============================================================================
+
+external_components:
+  - source: github://jnrivra/EZO_PRS@main
+    components: [ezo_prs]
+
+sensor:
+  - platform: ezo_prs
+    id: pressure_sensor
+    i2c_id: bus_a
+    name: "Pressure Sensor"
+    update_interval: 5s
+    pressure_unit: cmh2o   # psi | atm | bar | kpa | inh2o | cmh2o
+    decimals: 3            # 0-3
