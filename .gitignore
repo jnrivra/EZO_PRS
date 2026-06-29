@@ -46,6 +46,9 @@ var/
 .piolibdeps/
 .pio/
 
+# Secrets — never commit real credentials (use secrets.yaml.example as a template)
+secrets.yaml
+
 # IDE specific files
 .vscode/
 .idea/
