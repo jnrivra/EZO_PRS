@@ -6,9 +6,15 @@
 
 # Basic ESP32 setup
 esphome:
-  name: pressure_sensor
-  platform: ESP32
+  name: ezo-prs
+
+esp32:
   board: esp32dev
+  framework:
+    type: arduino
+
+# Enable logging (required by the logger.log actions on the buttons below)
+logger:
 
 # Enable WiFi
 wifi:
@@ -22,8 +28,13 @@ api:
 
 # Enable OTA updates
 ota:
-  password: !secret ota_password
+  - platform: esphome
+    password: !secret ota_password
 
+# Pull in the ezo_prs component from this repository
+external_components:
+  - source: github://jnrivra/EZO_PRS@main
+    components: [ezo_prs]
 
 # I2C configuration for sensors
 i2c:
